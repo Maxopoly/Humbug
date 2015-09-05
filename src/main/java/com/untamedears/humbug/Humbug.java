@@ -1008,6 +1008,57 @@ public class Humbug extends JavaPlugin implements Listener {
     }
   }
   
+  @BahHumbug(opt="smooth_blocks_craftable", def = "true")
+  public void addRecipies() {
+	  if (!config_.get("smooth_blocks_craftable").getBool()) {
+		  return;
+	  }
+	  
+	  //smooth double stone slab
+	  
+	  ItemStack resultSmoothStone = new ItemStack(Material.STONE_SLAB2, 2);
+	  ItemMeta smoothStoneMeta = resultSmoothStone.getItemMeta();
+	  List <String> loreListSmoothStone = new LinkedList <String> ();
+	  loreListSmoothStone.add("Smooth double slab");
+	  smoothStoneMeta.setLore(loreListSmoothStone);
+	  smoothStoneMeta.setDisplayName("Smooth double slab");
+	  ShapedRecipe smoothStoneRecipe = new ShapedRecipe(resultSmoothStone);
+	  smoothStoneRecipe.shape("ss","ss");
+	  smoothStoneRecipe.setIngredient('s', Material.STONE_SLAB2);
+	  Bukkit.addRecipe(smoothStoneRecipe);
+	  
+	  //smooth double sandstone slab
+	  
+	  ItemStack resultSmoothSandStone = new ItemStack(Material.STONE_SLAB2, 2, 1);
+	  ItemMeta smoothSandStoneMeta = resultSmoothSandStone.getItemMeta();
+	  List <String> loreListSmoothSandStone = new LinkedList <String> ();
+	  loreListSmoothSandStone.add("Smooth double slab");
+	  smoothSandStoneMeta.setLore(loreListSmoothSandStone);
+	  smoothSandStoneMeta.setDisplayName("Smooth double slab");
+	  ShapedRecipe smoothSandStoneRecipe = new ShapedRecipe(resultSmoothSandStone);
+	  smoothSandStoneRecipe.shape("ss","ss");
+	  smoothSandStoneRecipe.setIngredient('s', new MaterialData(Material.STONE_SLAB2,1));
+	  Bukkit.addRecipe(smoothSandStoneRecipe);	  
+  }
+  
+  @EventHandler(priority = EventPriority.LOWEST,ignoreCancelled=false)
+  public void onDoubleSlabUse(BlockPlaceEvent e) {
+    Material material = e.getBlock().getType();
+    if (material != Material.STONE_SLAB2) {
+    	return;
+    }
+    ItemStack is = e.getItemInHand();
+    if (!is.hasItemMeta() || !is.getItemMeta().hasLore()) {
+    	return;
+    }
+    ItemMeta blockMeta = is.getItemMeta();
+    if (blockMeta.getLore().get(0).equals("Smooth double slab")) {
+    	Block block = e.getBlock();
+    	byte type = (byte)(is.getDurability() + 8);
+    	block.setTypeIdAndData(Material.DOUBLE_STONE_SLAB2.getId(),type,true);
+    	}
+  }
+  
   public boolean isCrackedStone(ItemStack item) {
 	  if (item == null)
 		  return false;
@@ -2524,6 +2575,7 @@ public class Humbug extends JavaPlugin implements Listener {
     registerEvents();
     registerCommands();
     removeRecipies();
+    addRecipies();
     removeBooks();
     registerTimerForPearlCheck();
     global_instance_ = this;
