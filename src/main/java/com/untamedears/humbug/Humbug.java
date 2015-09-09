@@ -3,6 +3,8 @@ package com.untamedears.humbug;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -164,6 +166,9 @@ public class Humbug extends JavaPlugin implements Listener {
 
   private Random prng_ = new Random();
   private CombatInterface combatTag_;
+  
+  private static final List<Material> oresFortuneAppliesTo = Arrays.asList(Material.LAPIS_ORE,Material.REDSTONE_ORE,
+		  Material.QUARTZ_ORE,Material.COAL_ORE, Material.EMERALD_ORE, Material.DIAMOND_ORE);
 
   public Humbug() {}
 
@@ -498,6 +503,60 @@ public class Humbug extends JavaPlugin implements Listener {
       e.setCancelled(true);
     }
   }
+  
+  @BahHumbugs({
+	    @BahHumbug(opt="enableFortuneFix", def="true"),
+	    @BahHumbug(opt="percentageFortuneDropDoubler", type=OptType.Double)
+	  })
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void nerfFortuneDrops(BlockBreakEvent e) {
+	  if (!config_.get("enableFortuneFix").getBool()) {
+		  return;
+	  }
+	  Player p = e.getPlayer();
+	  if (p == null) {
+		  return;
+	  }
+	  ItemStack is = p.getItemInHand();
+	  if (is.hasItemMeta() && is.getItemMeta().hasEnchants()) {
+		  Map <Enchantment,Integer> enchants= is.getItemMeta().getEnchants();
+		  if (enchants.containsKey(Enchantment.LOOT_BONUS_BLOCKS)) {
+			  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
+			  int ublevel = 0;
+			  //spigot is stupid and wont let us change the drops directly, so we have to cancel
+			  // the event, spawn them manually and then turn the block to air
+			  if (oresFortuneAppliesTo.contains(e.getBlock().getType())) {
+				  if(enchants.containsKey(Enchantment.DURABILITY)) {
+					  ublevel = enchants.get(Enchantment.DURABILITY);
+				  }
+				  double chance = config_.get("percentageFortuneDropDoubler").getDouble();
+				  Collection <ItemStack> drops = e.getBlock().getDrops();
+				  ItemStack finalDrops;
+				  for (ItemStack drop:drops) { //because they are split in individual stacks
+					  if (finalDrops == null) {
+						  finalDrops = new ItemStack(drop.getType(), drop.getAmount());
+					  }
+					  else {
+						  finalDrops.setAmount(finalDrops.getAmount()+drop.getAmount());
+					  }
+				  }
+				  if (finalDrops != null) {
+					  if (prng_.nextDouble()<=chance*(double)level) {
+						  finalDrops.setAmount(finalDrops.getAmount()*2);
+					  }
+					  e.getBlock().setType(Material.AIR);
+					  p.getWorld().dropItemNaturally(e.getBlock().getLocation(), finalDrops);
+					  //deal damage to the pickaxe/shovel etc.
+					  if (ublevel == 0 || 1.0/(float)(ublevel+1) >= prng_.nextFloat()) {
+							  is.setDurability(is.getDurability()-1);
+						  }
+					  }
+					  e.setCancelled(true);				  
+				  }				  
+			  }	  
+		  }	
+	  }	  
+  
 
   public void EmptyEnderChest(HumanEntity human) {
     if (config_.get("ender_backpacks").getBool()) {
