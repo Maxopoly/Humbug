@@ -50,6 +50,7 @@ Minecraft server plug-in: Simply toggles various functionality
 - Adds option to (de)buff damage of arrows
 - Adds options to sanitize signs on placement
 - Adds option to sanitize existing signs in chunks
+- Adds option to nerf or disable fortune
 
 The 'humbug' console command can be used to get or set any of the configuration file settings while the server is running. Also available are 'humbug save' and 'humbug reload'.
 
@@ -114,6 +115,8 @@ Config file settings:
 - prevent_long_signs_allornothing: Boolean, if over limit clear line (if true) or truncate line (if false)
 - prevent_long_signs_cancelevent: Boolean, if over limit just cancel the sign change event
 - prevent_long_signs_in_chunks: Boolean, clears over-long signs from chunks as they load
+- enableFortuneFix: Boolean, whether fortune drops should be altered
+- percentageFortuneDropDoubler: Float, if the fortune fix is enabled and an ore block, which would be affected by fortune is destroyed, there is a chance of this value, multiplied with the level of the fortune enchantment on the tool the block was destroyed with to double the drops the block wouild give without fortune, otherwise it just drops the amount it would give without fortune
 
 Default configuration (biased for CivCraft):
 - debug: false
