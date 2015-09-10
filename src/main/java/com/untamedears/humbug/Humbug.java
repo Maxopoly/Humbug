@@ -508,7 +508,7 @@ public class Humbug extends JavaPlugin implements Listener {
 	    @BahHumbug(opt="enableFortuneFix", def="true"),
 	    @BahHumbug(opt="percentageFortuneDropDoubler", type=OptType.Double)
 	  })
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = EventPriority.HIGH)
   public void nerfFortuneDrops(BlockBreakEvent e) {
 	  if (!config_.get("enableFortuneFix").getBool()) {
 		  return;
@@ -521,14 +521,10 @@ public class Humbug extends JavaPlugin implements Listener {
 	  if (is.hasItemMeta() && is.getItemMeta().hasEnchants()) {
 		  Map <Enchantment,Integer> enchants= is.getItemMeta().getEnchants();
 		  if (enchants.containsKey(Enchantment.LOOT_BONUS_BLOCKS)) {
-			  int level = enchants.get(Enchantment.LOOT_BONUS_BLOCKS);
-			  int ublevel = 0;
 			  //spigot is stupid and wont let us change the drops directly, so we have to cancel
 			  // the event, spawn them manually and then turn the block to air
 			  if (oresFortuneAppliesTo.contains(e.getBlock().getType())) {
-				  if(enchants.containsKey(Enchantment.DURABILITY)) {
-					  ublevel = enchants.get(Enchantment.DURABILITY);
-				  }
+				  e.setCancelled(true);
 				  double chance = config_.get("percentageFortuneDropDoubler").getDouble();
 				  Collection <ItemStack> drops = e.getBlock().getDrops();
 				  ItemStack finalDrops;
@@ -537,21 +533,25 @@ public class Humbug extends JavaPlugin implements Listener {
 						  finalDrops = new ItemStack(drop.getType(), drop.getAmount());
 					  }
 					  else {
-						  finalDrops.setAmount(finalDrops.getAmount()+drop.getAmount());
+						  if (finalDrops.getType() == drop.getType()) {
+						  finalDrops.setAmount(finalDrops.getAmount()+drop.getAmount()); }
+						  else {
+							  throw new EventException("Unexpected drop from ore");
+						  }
 					  }
 				  }
 				  if (finalDrops != null) {
-					  if (prng_.nextDouble()<=chance*(double)level) {
+					  if (prng_.nextDouble()<=chance*(double)enchants.get(Enchantment.LOOT_BONUS_BLOCKS)) {
 						  finalDrops.setAmount(finalDrops.getAmount()*2);
 					  }
 					  e.getBlock().setType(Material.AIR);
 					  p.getWorld().dropItemNaturally(e.getBlock().getLocation(), finalDrops);
 					  //deal damage to the pickaxe/shovel etc.
-					  if (ublevel == 0 || 1.0/(float)(ublevel+1) >= prng_.nextFloat()) {
+					  if (!enchants.containsKey(Enchantment.DURABILITY) || 1.0/(float)(enchants.get(Enchantment.DURABILITY)+1) 
+							  >= prng_.nextFloat()) {
 							  is.setDurability(is.getDurability()-1);
 						  }
-					  }
-					  e.setCancelled(true);				  
+					  }		  
 				  }				  
 			  }	  
 		  }	
