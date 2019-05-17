@@ -30,17 +30,17 @@ public class CustomNMSItemEnderPearl extends ItemEnderPearl {
 		if (!world.isClientSide)
 		{
 			double gravity = this.config.get("ender_pearl_gravity").getDouble();
-			
+
 			CustomNMSEntityEnderPearl entityenderpearl = new CustomNMSEntityEnderPearl(world, entityhuman, gravity);
 			      
 			entityenderpearl.a(entityhuman, entityhuman.pitch, entityhuman.yaw, 0.0F, 1.5F, 1.0F);
-			
+
 			if (!world.addEntity(entityenderpearl))
 			{
 				if ((entityhuman instanceof EntityPlayer)) {
 					((EntityPlayer)entityhuman).getBukkitEntity().updateInventory();
 				}
-				
+
 				return new InteractionResultWrapper<ItemStack>(EnumInteractionResult.FAIL, itemstack);
 			}
 		}

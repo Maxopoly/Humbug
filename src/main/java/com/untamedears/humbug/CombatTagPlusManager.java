@@ -10,7 +10,7 @@ public class CombatTagPlusManager implements CombatInterface{
 
 	private TagManager tagManager;
 	private boolean combatTagEnabled_ = false;
-	
+
 	public CombatTagPlusManager() {
 		if(Bukkit.getPluginManager().getPlugin("CombatTagPlus") != null) {
 			CombatTagPlus combat = (CombatTagPlus) Bukkit.getPluginManager().getPlugin("CombatTagPlus");
@@ -18,7 +18,7 @@ public class CombatTagPlusManager implements CombatInterface{
             combatTagEnabled_ = true;
 		}
 	}
-	
+
 	public boolean tagPlayer(Player player) {
         if (combatTagEnabled_ && tagManager != null) {
         	tagManager.tag(player, null);
